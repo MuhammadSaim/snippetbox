@@ -13,8 +13,15 @@ import (
 // define a home handler function
 func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
 
-	// initialize a slice containing the paths
-	// it is important our base file should add on top
+	// Fetch the latest snippets from the DB
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// Initialize a slice containing the paths
+	// It is important our base file should add on top
 	files := []string{
 		"./ui/html/layouts/base.tmpl",
 		"./ui/html/partials/nav.tmpl",
@@ -33,10 +40,15 @@ func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	// Create an instance of a template struct holding the slice of snippets
+	data := templateData{
+		Snippets: snippets,
+	}
+
 	// Now we use the Execute method on the template set to write the
 	// template content as the response body. The last parameter to Execute
 	// represent any dynamic data that we want to pass in.
-	err = ts.ExecuteTemplate(w, "base", nil)
+	err = ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
 		app.serverError(w, r, err)
@@ -64,10 +76,34 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 		}else{
 			app.serverError(w, r, err)
 		}
+		return
 	}
 
-	// Write the snippet data as a plain-text HTTP response
-	fmt.Fprintf(w, "%+v", snippet)
+	// Initialize a slice containing paths to the tmpl
+	files := []string{
+		"./ui/html/layouts/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/view.tmpl",
+	}
+
+	// parse the template files
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// Create an instance of a templateData struct holding snippet data
+	data := templateData{
+		Snippet: snippet,
+	}
+
+	// Execute the template and pass the data
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+
 }
 
 // add snippetCreate hadnle function
