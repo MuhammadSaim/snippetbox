@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // define a home handler function
@@ -12,7 +14,16 @@ func home(w http.ResponseWriter, r *http.Request){
 
 // add snippetView hadnle function
 func snippetView(w http.ResponseWriter, r *http.Request){
-	w.Write([]byte("Display a specific snippet"))
+
+	// extract the value of an ID from the path
+	// check the ID is valid intgere
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+	msg := fmt.Sprintf("Display a specific snippet with ID %d...", id)
+	w.Write([]byte(msg))
 }
 
 // add snippetCreate hadnle function
@@ -25,8 +36,8 @@ func main(){
 	// use the http.NewServerMux() for creating the servermux
 	// register the home function as the handler for the root url
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
+	mux.HandleFunc("/{$}", home)
+	mux.HandleFunc("/snippet/view/{id}", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
 	// printing the log message
