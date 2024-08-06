@@ -1,11 +1,26 @@
 package main
 
 import (
-	"log"
+	"flag"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main(){
+
+	// Define a new command-line flag with the name 'addr', a default
+	// value of ":4000"
+	addr := flag.String("addr", ":4000", "HTTP network address")
+
+
+	// Importantly, we use flag parse func to parse the command-line flag.
+	// This reads in the command-line flag value and assigns it to the addr variable
+	flag.Parse()
+
+	// use the slog.New func to initialize a new structured logger, which
+	// writes to the standard out stream and use the default settings.
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	// use the http.NewServerMux() for creating the servermux
 	// register the home function as the handler for the root url
@@ -24,10 +39,15 @@ func main(){
 	mux.HandleFunc("GET /snippet/view/{id}", snippetView)
 	mux.HandleFunc("GET /snippet/create", snippetCreate)
 
-	// printing the log message
-	log.Print("Starting server on :4000")
+	// use the Info() method to log the starting server message at info
+	logger.Info("Starting server", "addr", *addr)
 
-	err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 
-	log.Fatal(err)
+	// And we also use the Error() method to lag any error message returned by
+	// http.ListenAndServe() at Error. End of that terminate the application with os.Exit
+	logger.Error(err.Error())
+
+
+	os.Exit(1)
 }
