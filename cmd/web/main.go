@@ -33,27 +33,10 @@ func main(){
 		logger: logger,
 	}
 
-	// use the http.NewServerMux() for creating the servermux
-	// register the home function as the handler for the root url
-	mux := http.NewServeMux()
-
-	// create a file server which serves files out of the "static" dir.
-	// path should be the relative to the project path or root directory
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-
-	// Use the mux.Handle func to register the file server
-	// which can handle all the routes starts with "/static/"
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
-
-	// Registered the other application routes
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
-	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
-
 	// use the Info() method to log the starting server message at info
 	logger.Info("Starting server", "addr", *addr)
 
-	err := http.ListenAndServe(*addr, mux)
+	err := http.ListenAndServe(*addr, app.routes())
 
 	// And we also use the Error() method to lag any error message returned by
 	// http.ListenAndServe() at Error. End of that terminate the application with os.Exit
