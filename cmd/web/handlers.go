@@ -60,3 +60,26 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
 	w.Write([]byte("Display a form for creating a new snippet"))
 }
+
+// add snippetCreatePost handle to store the data into DB
+func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request)  {
+	// create some variable to memic post data
+	title := "My First Snippets"
+	content := `{{ define "title" }} Home {{ end }}
+				{{ define "main" }}
+				<h2>Latest Snippets</h2>
+				<p>There's nothing to see here yet!</p>
+				{{ end }}
+				`
+	expiresIn := 7
+
+	// pass this data to Insert method to store in the DB
+	id, err := app.snippets.Insert(title, content, expiresIn)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// redirect the user to the snippet page
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+}
