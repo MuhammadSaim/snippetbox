@@ -3,13 +3,12 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
 // define a home handler function
-func home(w http.ResponseWriter, r *http.Request){
+func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
 
 	// initialize a slice containing the paths
 	// it is important our base file should add on top
@@ -26,7 +25,7 @@ func home(w http.ResponseWriter, r *http.Request){
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Print(err.Error())
+		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -36,13 +35,13 @@ func home(w http.ResponseWriter, r *http.Request){
 	// represent any dynamic data that we want to pass in.
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
 // add snippetView hadnle function
-func snippetView(w http.ResponseWriter, r *http.Request){
+func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 
 	// extract the value of an ID from the path
 	// check the ID is valid intgere
@@ -58,6 +57,6 @@ func snippetView(w http.ResponseWriter, r *http.Request){
 }
 
 // add snippetCreate hadnle function
-func snippetCreate(w http.ResponseWriter, r *http.Request){
+func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
 	w.Write([]byte("Display a form for creating a new snippet"))
 }

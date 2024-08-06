@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+type applictaion struct {
+	logger *slog.Logger
+}
+
 func main(){
 
 	// Define a new command-line flag with the name 'addr', a default
@@ -22,6 +26,13 @@ func main(){
 	// writes to the standard out stream and use the default settings.
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
+	// Initialize a new instance of our application struct, containing the
+	// dependencies for the time being just adding our logger
+
+	app := &applictaion{
+		logger: logger,
+	}
+
 	// use the http.NewServerMux() for creating the servermux
 	// register the home function as the handler for the root url
 	mux := http.NewServeMux()
@@ -35,9 +46,9 @@ func main(){
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	// Registered the other application routes
-	mux.HandleFunc("GET /{$}", home)
-	mux.HandleFunc("GET /snippet/view/{id}", snippetView)
-	mux.HandleFunc("GET /snippet/create", snippetCreate)
+	mux.HandleFunc("GET /{$}", app.home)
+	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
+	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
 
 	// use the Info() method to log the starting server message at info
 	logger.Info("Starting server", "addr", *addr)
@@ -48,6 +59,6 @@ func main(){
 	// http.ListenAndServe() at Error. End of that terminate the application with os.Exit
 	logger.Error(err.Error())
 
-
+	// exit the application
 	os.Exit(1)
 }
