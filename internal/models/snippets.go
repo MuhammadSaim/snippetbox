@@ -22,8 +22,31 @@ type SnippetModel struct {
 }
 
 // This will insert a new snippet into the DB
-func (m *SnippetModel) Insert(title string, conetnt string, expiredAt int, createdAt int, updatedAt int) (int, error)  {
-	return 0, nil
+func (m *SnippetModel) Insert(title string, conetnt string, expires int) (int, error)  {
+	// Write the SQL statement we want to execute. I have split it over Three lines
+	// for readability that's why I used backquotes
+	stmt := `INSERT INTO snippets (title, content, expired_at, created_at, updated_at)
+			VALUES
+			(?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY), UTC_TIMESTAMP(), UTC_TIMESTAMP())`
+
+	// Use the Exec() method on the embeded connection pool to execute the
+	// statement . The first parameter is the SQL statement, followed by the
+	// values for the placeholder parameters
+	result, err := m.DB.Exec(stmt, title, conetnt, expires)
+	if err != nil {
+		return 0, err
+	}
+
+	// Use the LastInsertId method on the result to get teh ID
+	// of our newly inserted record
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	// The ID returned has the type int64, so we convert it to an int type
+	// before returning
+	return int(id), nil
 }
 
 // This will return a specific snipped based on its id
