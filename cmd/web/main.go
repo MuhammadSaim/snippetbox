@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/MuhammadSaim/snippetbox/internal/models"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type applictaion struct {
 	logger *slog.Logger
+	snippets *models.SnippetModel
 }
 
 func main(){
@@ -49,6 +51,7 @@ func main(){
 
 	app := &applictaion{
 		logger: logger,
+		snippets: &models.SnippetModel{DB: db},
 	}
 
 	// use the Info() method to log the starting server message at info
