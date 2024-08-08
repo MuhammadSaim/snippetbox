@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -19,4 +20,26 @@ func (app *applictaion) serverError(w http.ResponseWriter, r *http.Request, err 
 // The clientError helper sends a specific status code and corresponding description
 func (app *applictaion) clientError(w http.ResponseWriter, status int){
 	http.Error(w, http.StatusText(status), status)
+}
+
+// Render the template but first find out in the cache
+func (app *applictaion) rendefr(w http.ResponseWriter, r *http.Request, status int, page string, data templateData)  {
+	// Retrive the appropriate template set from the cache based on the page
+	// If there is no entry in the cache will through an error
+	ts, ok := app.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("the %s template does not exist", page)
+		app.serverError(w, r, err)
+		return
+	}
+
+	// Write the status code
+	w.WriteHeader(status)
+
+	// Now write the template set and write the response body. Again, if there
+	// is any error we call the serverError helper
+	err := ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }
