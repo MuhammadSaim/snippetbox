@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -20,39 +19,11 @@ func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// Initialize a slice containing the paths
-	// It is important our base file should add on top
-	files := []string{
-		"./ui/html/layouts/base.tmpl",
-		"./ui/html/partials/nav.tmpl",
-		"./ui/html/pages/home.tmpl",
-	}
-
-	// use the template.ParseFile function to read the template file into a
-	// template set. If there's an error, we log the detailed error message, use
-	// the http.Error function to send an internal server error reponse to the user
-	// and the return from the handler so no subsequent code is executed.
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
-		app.serverError(w, r, err)
-		return
-	}
-
-	// Create an instance of a template struct holding the slice of snippets
-	data := templateData{
+	// Use the render func
+	app.render(w, r, http.StatusOK, "home.tmpl", templateData{
 		Snippets: snippets,
-	}
+	})
 
-	// Now we use the Execute method on the template set to write the
-	// template content as the response body. The last parameter to Execute
-	// represent any dynamic data that we want to pass in.
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
-		app.serverError(w, r, err)
-	}
 }
 
 // add snippetView hadnle function
@@ -79,30 +50,10 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// Initialize a slice containing paths to the tmpl
-	files := []string{
-		"./ui/html/layouts/base.tmpl",
-		"./ui/html/partials/nav.tmpl",
-		"./ui/html/pages/view.tmpl",
-	}
-
-	// parse the template files
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	// Create an instance of a templateData struct holding snippet data
-	data := templateData{
+	// Use the render func
+	app.render(w, r, http.StatusOK, "view.tmpl", templateData{
 		Snippet: snippet,
-	}
-
-	// Execute the template and pass the data
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	})
 
 }
 

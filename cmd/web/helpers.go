@@ -23,7 +23,7 @@ func (app *applictaion) clientError(w http.ResponseWriter, status int){
 }
 
 // Render the template but first find out in the cache
-func (app *applictaion) rendefr(w http.ResponseWriter, r *http.Request, status int, page string, data templateData)  {
+func (app *applictaion) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData)  {
 	// Retrive the appropriate template set from the cache based on the page
 	// If there is no entry in the cache will through an error
 	ts, ok := app.templateCache[page]
