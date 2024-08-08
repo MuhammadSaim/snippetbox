@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ import (
 type applictaion struct {
 	logger *slog.Logger
 	snippets *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main(){
@@ -46,12 +48,19 @@ func main(){
 	// beofre the main func exit
 	defer db.Close()
 
+	// Initialize a new template cache
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	// Initialize a new instance of our application struct, containing the
 	// dependencies for the time being just adding our logger
-
 	app := &applictaion{
 		logger: logger,
 		snippets: &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	// use the Info() method to log the starting server message at info
