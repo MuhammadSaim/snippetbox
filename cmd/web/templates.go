@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"path/filepath"
+	"time"
 
 	"github.com/MuhammadSaim/snippetbox/internal/models"
 )
@@ -12,6 +13,25 @@ import (
 type templateData struct {
 	Snippet models.Snippet
 	Snippets []models.Snippet
+}
+
+
+// Create a humanDate func which returns a nicely formatted
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+// Get the current year
+func currentYear() int {
+	return time.Now().Year()
+}
+
+// Initialize a template.FuncMap object and store it in a global variable. This is
+// essentially a string-keyed map which acts as a lookup between the names of our
+// custom template func and the func themselves
+var functions = template.FuncMap{
+	"humanDate": humanDate,
+	"currentYear": currentYear,
 }
 
 // A function to implement the cache
@@ -33,7 +53,9 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 
 		// Parse the base template file into a template set
-		ts, err := template.ParseFiles("./ui/html/layouts/base.tmpl")
+		// for using the functions We have to create empty template set and register the
+		// functions before the ParseFiles function
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/layouts/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
