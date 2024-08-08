@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-func (app *applictaion) routes() *http.ServeMux {
+func (app *applictaion) routes() http.Handler {
 	// use the http.NewServerMux() for creating the servermux
 	// register the home function as the handler for the root url
 	mux := http.NewServeMux()
@@ -21,5 +21,5 @@ func (app *applictaion) routes() *http.ServeMux {
 	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
 	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
 
-	return mux
+	return app.logRequest(commonHeaders(mux))
 }
