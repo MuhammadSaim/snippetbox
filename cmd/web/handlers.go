@@ -59,7 +59,7 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 
 // add snippetCreate hadnle function
 func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
-	w.Write([]byte("Display a form for creating a new snippet"))
+	app.render(w, r, http.StatusOK, "create.tmpl", templateData{})
 }
 
 // add snippetCreatePost handle to store the data into DB
