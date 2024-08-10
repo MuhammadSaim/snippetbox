@@ -5,9 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/MuhammadSaim/snippetbox/internal/models"
 )
+
+// Define a snippetCreateForm struct to represent the form data and validtaion
+type snippetCreateForm struct {
+	Title string
+	Content string
+	Expires int
+	FieldErrors map[string]string
+}
 
 // define a home handler function
 func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
@@ -19,10 +29,11 @@ func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
+
 	// Use the render func
-	app.render(w, r, http.StatusOK, "home.tmpl", templateData{
-		Snippets: snippets,
-	})
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
 
 }
 
@@ -50,16 +61,21 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
+
 	// Use the render func
-	app.render(w, r, http.StatusOK, "view.tmpl", templateData{
-		Snippet: snippet,
-	})
+	app.render(w, r, http.StatusOK, "view.tmpl", data)
 
 }
 
 // add snippetCreate hadnle function
 func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
-	app.render(w, r, http.StatusOK, "create.tmpl", templateData{})
+	data := app.newTemplateData(r)
+	data.Form = snippetCreateForm{
+		Expires: 365,
+	}
+	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
 
 // add snippetCreatePost handle to store the data into DB
@@ -73,10 +89,6 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// use the Get func to chain with ParseForm and get the data
-	title := r.FormValue("title")
-	content := r.FormValue("content")
-
 	// FormValue return data in string so we have to for the
 	// expire values we have to convert it into Int
 	expiresIn, err := strconv.Atoi(r.FormValue("expires"))
@@ -85,8 +97,40 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	form := snippetCreateForm{
+		Title: r.FormValue("title"),
+		Content: r.FormValue("content"),
+		Expires: expiresIn,
+		FieldErrors: map[string]string{},
+	}
+
+	// check the title value is not blank and is note more then 100 chars
+	if strings.TrimSpace(form.Title) == "" {
+		form.FieldErrors["title"] = "This field cannot be blank."
+	}else if utf8.RuneCountInString(form.Title) > 100 {
+		form.FieldErrors["title"] = "This field cannot be more than 100 characters long."
+	}
+
+	// Check the content value isn't blank
+	if strings.TrimSpace(form.Content) == "" {
+		form.FieldErrors["content"] = "This field cannot be blank."
+	}
+
+	// Check the expires value matches one of these values 1, 7 or 365
+	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
+		form.FieldErrors["expires"] = "The field must equal 1, 7 or 365"
+	}
+
+	// If there is any validation error then we have to re-render the view
+	if len(form.FieldErrors) > 0 {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
+		return
+	}
+
 	// pass this data to Insert method to store in the DB
-	id, err := app.snippets.Insert(title, content, expiresIn)
+	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

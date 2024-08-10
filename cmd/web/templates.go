@@ -11,8 +11,10 @@ import (
 // Define a templateData type to act as the holding structure for
 // any dynamic data that we want to pass to our HTML.
 type templateData struct {
+	CurrentYear int
 	Snippet models.Snippet
 	Snippets []models.Snippet
+	Form any
 }
 
 
@@ -21,17 +23,11 @@ func humanDate(t time.Time) string {
 	return t.Format("02 Jan 2006 at 15:04")
 }
 
-// Get the current year
-func currentYear() int {
-	return time.Now().Year()
-}
-
 // Initialize a template.FuncMap object and store it in a global variable. This is
 // essentially a string-keyed map which acts as a lookup between the names of our
 // custom template func and the func themselves
 var functions = template.FuncMap{
 	"humanDate": humanDate,
-	"currentYear": currentYear,
 }
 
 // A function to implement the cache
