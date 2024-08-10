@@ -64,15 +64,26 @@ func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
 
 // add snippetCreatePost handle to store the data into DB
 func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request)  {
-	// create some variable to memic post data
-	title := "My First Snippets"
-	content := `{{ define "title" }} Home {{ end }}
-				{{ define "main" }}
-				<h2>Latest Snippets</h2>
-				<p>There's nothing to see here yet!</p>
-				{{ end }}
-				`
-	expiresIn := 7
+
+	// ParseForm which adds any data in POST request
+	// If there is any error we will shoot clientErrors
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// use the Get func to chain with ParseForm and get the data
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+
+	// FormValue return data in string so we have to for the
+	// expire values we have to convert it into Int
+	expiresIn, err := strconv.Atoi(r.FormValue("expires"))
+	if err !=  nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
 	// pass this data to Insert method to store in the DB
 	id, err := app.snippets.Insert(title, content, expiresIn)
