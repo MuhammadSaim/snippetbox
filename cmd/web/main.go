@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -79,17 +80,28 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
+	// Initialize the tls.config struct to hold the non default
+	// TLS configs
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	server := &http.Server{
 		Addr:    *addr,
 		Handler: app.routes(),
 		// Create a log.Logger from our structured logger handler
-		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ErrorLog:  slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig: tlsConfig,
+		// Add idle, Read and write timeout
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	// use the Info() method to log the starting server message at info
 	logger.Info("Starting server", "addr", server.Addr)
 
-	serverErr := server.ListenAndServe()
+	serverErr := server.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 
 	// And we also use the Error() method to lag any error message returned by
 	// http.ListenAndServe() at Error. End of that terminate the application with os.Exit
