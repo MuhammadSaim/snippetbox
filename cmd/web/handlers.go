@@ -121,6 +121,9 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Use the put method to add a string value for the flash message
+	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
+
 	// redirect the user to the snippet page
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
