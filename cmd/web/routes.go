@@ -19,11 +19,15 @@ func (app *applictaion) routes() http.Handler {
 	// which can handle all the routes starts with "/static/"
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
+	// Create a new middleware chain containing the middleware chain with the
+	// handler func
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
+
 	// Registered the other application routes
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
-	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
-	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
+	mux.Handle("GET /snippet/create", dynamic.ThenFunc(app.snippetCreate))
+	mux.Handle("POST /snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
 	// Create a middleware chain containing our middleware
 	// which will be used for every request in our applictaion
