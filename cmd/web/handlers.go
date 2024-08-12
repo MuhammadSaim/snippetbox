@@ -93,7 +93,7 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	// Call the Decode method of the form decoder, passing in the current
 	// request and a pointer to our struct with the relavent fields.
-	err = app.formDecoder.Decode(&form, r.PostForm)
+	err = app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
