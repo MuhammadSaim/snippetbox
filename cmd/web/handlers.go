@@ -12,10 +12,10 @@ import (
 
 // Define a snippetCreateForm struct to represent the form data and validtaion
 type snippetCreateForm struct {
-	Title   string
-	Content string
-	Expires int
-	validator.Validator
+	Title               string `form:"title"`
+	Content             string `form:"content"`
+	Expires             int    `form:"expires"`
+	validator.Validator `form:"-"`
 }
 
 // define a home handler function
@@ -88,18 +88,15 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// FormValue return data in string so we have to for the
-	// expire values we have to convert it into Int
-	expiresIn, err := strconv.Atoi(r.FormValue("expires"))
+	// Declare a new empty instance of the snippetCreateForm struct
+	var form snippetCreateForm
+
+	// Call the Decode method of the form decoder, passing in the current
+	// request and a pointer to our struct with the relavent fields.
+	err = app.formDecoder.Decode(&form, r.PostForm)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
-	}
-
-	form := snippetCreateForm{
-		Title:   r.FormValue("title"),
-		Content: r.FormValue("content"),
-		Expires: expiresIn,
 	}
 
 	// Because the Validator struct is embedded by the snippetCreateForm

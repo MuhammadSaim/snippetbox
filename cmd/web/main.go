@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/MuhammadSaim/snippetbox/internal/models"
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -16,6 +17,7 @@ type applictaion struct {
 	logger        *slog.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -54,12 +56,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Initialize a decoder instance
+	formDecoder := form.NewDecoder()
+
 	// Initialize a new instance of our application struct, containing the
 	// dependencies for the time being just adding our logger
 	app := &applictaion{
 		logger:        logger,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	// use the Info() method to log the starting server message at info
