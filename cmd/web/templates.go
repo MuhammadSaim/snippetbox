@@ -12,11 +12,10 @@ import (
 // any dynamic data that we want to pass to our HTML.
 type templateData struct {
 	CurrentYear int
-	Snippet models.Snippet
-	Snippets []models.Snippet
-	Form any
+	Snippet     models.Snippet
+	Snippets    []models.Snippet
+	Form        any
 }
-
 
 // Create a humanDate func which returns a nicely formatted
 func humanDate(t time.Time) string {

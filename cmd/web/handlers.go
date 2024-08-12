@@ -12,14 +12,14 @@ import (
 
 // Define a snippetCreateForm struct to represent the form data and validtaion
 type snippetCreateForm struct {
-	Title string
+	Title   string
 	Content string
 	Expires int
 	validator.Validator
 }
 
 // define a home handler function
-func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
+func (app *applictaion) home(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch the latest snippets from the DB
 	snippets, err := app.snippets.Latest()
@@ -37,7 +37,7 @@ func (app *applictaion) home(w http.ResponseWriter, r *http.Request){
 }
 
 // add snippetView hadnle function
-func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
+func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request) {
 
 	// extract the value of an ID from the path
 	// check the ID is valid intgere
@@ -54,7 +54,7 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			http.NotFound(w, r)
-		}else{
+		} else {
 			app.serverError(w, r, err)
 		}
 		return
@@ -69,7 +69,7 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request){
 }
 
 // add snippetCreate hadnle function
-func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
+func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = snippetCreateForm{
 		Expires: 365,
@@ -78,7 +78,7 @@ func (app *applictaion) snippetCreate(w http.ResponseWriter, r *http.Request){
 }
 
 // add snippetCreatePost handle to store the data into DB
-func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request)  {
+func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	// ParseForm which adds any data in POST request
 	// If there is any error we will shoot clientErrors
@@ -91,13 +91,13 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	// FormValue return data in string so we have to for the
 	// expire values we have to convert it into Int
 	expiresIn, err := strconv.Atoi(r.FormValue("expires"))
-	if err !=  nil {
+	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
 	form := snippetCreateForm{
-		Title: r.FormValue("title"),
+		Title:   r.FormValue("title"),
 		Content: r.FormValue("content"),
 		Expires: expiresIn,
 	}

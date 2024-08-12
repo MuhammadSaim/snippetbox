@@ -9,9 +9,9 @@ import (
 // Define a Snippet type to hold teh data for an individual snippet. Notice how
 // the fields of the struct correspond to the fields in our MySQL snippets table
 type Snippet struct {
-	ID int
-	Title string
-	Content string
+	ID        int
+	Title     string
+	Content   string
 	ExpiredAt time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -23,7 +23,7 @@ type SnippetModel struct {
 }
 
 // This will insert a new snippet into the DB
-func (m *SnippetModel) Insert(title string, conetnt string, expires int) (int, error)  {
+func (m *SnippetModel) Insert(title string, conetnt string, expires int) (int, error) {
 	// Write the SQL statement we want to execute. I have split it over Three lines
 	// for readability that's why I used backquotes
 	stmt := `INSERT INTO snippets (title, content, expired_at, created_at, updated_at)
@@ -51,7 +51,7 @@ func (m *SnippetModel) Insert(title string, conetnt string, expires int) (int, e
 }
 
 // This will return a specific snipped based on its id
-func (m *SnippetModel) Get(id int) (Snippet, error)  {
+func (m *SnippetModel) Get(id int) (Snippet, error) {
 	// SQL statement to get the snippet
 	stmt := `SELECT * FROM snippets WHERE expired_at > UTC_TIMESTAMP() AND id = ?`
 
@@ -66,9 +66,9 @@ func (m *SnippetModel) Get(id int) (Snippet, error)  {
 	// Use row.Scan to copy the values from each field to crosponding structs
 	err := row.Scan(&snippet.ID, &snippet.Title, &snippet.Content, &snippet.ExpiredAt, &snippet.CreatedAt, &snippet.UpdatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows){
+		if errors.Is(err, sql.ErrNoRows) {
 			return Snippet{}, ErrNoRecord
-		}else{
+		} else {
 			return Snippet{}, err
 		}
 	}

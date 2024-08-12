@@ -13,12 +13,12 @@ import (
 )
 
 type applictaion struct {
-	logger *slog.Logger
-	snippets *models.SnippetModel
+	logger        *slog.Logger
+	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
 }
 
-func main(){
+func main() {
 
 	// Define a new command-line flag with the name 'addr', a default
 	// value of ":4000"
@@ -26,7 +26,6 @@ func main(){
 
 	// Define a new command-line flag for the MySQL DSN string
 	dsn := flag.String("dsn", "muhammadsaim:muhammadsaim@/golang_snippetbox?parseTime=true", "MySQL data source name")
-
 
 	// Importantly, we use flag parse func to parse the command-line flag.
 	// This reads in the command-line flag value and assigns it to the addr variable
@@ -58,8 +57,8 @@ func main(){
 	// Initialize a new instance of our application struct, containing the
 	// dependencies for the time being just adding our logger
 	app := &applictaion{
-		logger: logger,
-		snippets: &models.SnippetModel{DB: db},
+		logger:        logger,
+		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
 	}
 
@@ -77,7 +76,7 @@ func main(){
 }
 
 // The openDB func wraps sql.Open() and return the sql.DB connection pool
-func openDB(dsn string) (*sql.DB, error)  {
+func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err

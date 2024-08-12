@@ -9,10 +9,10 @@ import (
 
 // The serverError helper writes a log entry at Error level
 // then sends a generic 500 internal server error response to the user
-func (app *applictaion) serverError(w http.ResponseWriter, r *http.Request, err error){
+func (app *applictaion) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	var (
 		method = r.Method
-		uri = r.URL.RequestURI()
+		uri    = r.URL.RequestURI()
 	)
 
 	app.logger.Error(err.Error(), "method", method, "uri", uri)
@@ -20,12 +20,12 @@ func (app *applictaion) serverError(w http.ResponseWriter, r *http.Request, err 
 }
 
 // The clientError helper sends a specific status code and corresponding description
-func (app *applictaion) clientError(w http.ResponseWriter, status int){
+func (app *applictaion) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
 // Render the template but first find out in the cache
-func (app *applictaion) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData)  {
+func (app *applictaion) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
 	// Retrive the appropriate template set from the cache based on the page
 	// If there is no entry in the cache will through an error
 	ts, ok := app.templateCache[page]
