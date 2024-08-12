@@ -79,10 +79,17 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
-	// use the Info() method to log the starting server message at info
-	logger.Info("Starting server", "addr", *addr)
+	server := &http.Server{
+		Addr:    *addr,
+		Handler: app.routes(),
+		// Create a log.Logger from our structured logger handler
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
 
-	serverErr := http.ListenAndServe(*addr, app.routes())
+	// use the Info() method to log the starting server message at info
+	logger.Info("Starting server", "addr", server.Addr)
+
+	serverErr := server.ListenAndServe()
 
 	// And we also use the Error() method to lag any error message returned by
 	// http.ListenAndServe() at Error. End of that terminate the application with os.Exit
