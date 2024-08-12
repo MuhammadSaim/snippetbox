@@ -7,17 +7,21 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/MuhammadSaim/snippetbox/internal/models"
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type applictaion struct {
-	logger        *slog.Logger
-	snippets      *models.SnippetModel
-	templateCache map[string]*template.Template
-	formDecoder   *form.Decoder
+	logger         *slog.Logger
+	snippets       *models.SnippetModel
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -59,13 +63,20 @@ func main() {
 	// Initialize a decoder instance
 	formDecoder := form.NewDecoder()
 
+	// Use the scs.New func to initiate a new session manager. Then we
+	// configure it to use our MySQL database as the session store and set the lifetime of 12 hours
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	// Initialize a new instance of our application struct, containing the
 	// dependencies for the time being just adding our logger
 	app := &applictaion{
-		logger:        logger,
-		snippets:      &models.SnippetModel{DB: db},
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
+		logger:         logger,
+		snippets:       &models.SnippetModel{DB: db},
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	// use the Info() method to log the starting server message at info
