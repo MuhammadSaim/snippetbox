@@ -127,3 +127,30 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	// redirect the user to the snippet page
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
+
+// handlers for the authentications
+
+// handler for the signup form view
+func (app *applictaion) userSignup(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// handler for the signup post form
+func (app *applictaion) userSignupPost(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// handler for the login post form view
+func (app *applictaion) userLogin(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// handler for the login post form
+func (app *applictaion) userLoginPost(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// handler for the logout post
+func (app *applictaion) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+
+}
