@@ -29,3 +29,21 @@ func (app *applictaion) logRequest(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *applictaion) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// If user is not authenticated redirect to the login page
+		if !app.IsAuthenticated(r) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+
+		// If user is authenticated add Cache-Control no-store
+		// so pages will not be cached
+		w.Header().Add("Cache-Control", "no-store")
+
+		// Add call the next handler
+		next.ServeHTTP(w, r)
+	})
+}
