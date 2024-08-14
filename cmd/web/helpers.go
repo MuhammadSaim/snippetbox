@@ -61,8 +61,9 @@ func (app *applictaion) render(w http.ResponseWriter, r *http.Request, status in
 // Create a newTemplateData helper
 func (app *applictaion) newTemplateData(r *http.Request) templateData {
 	return templateData{
-		CurrentYear: time.Now().Year(),
-		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
+		CurrentYear:     time.Now().Year(),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.IsAuthenticated(r),
 	}
 }
 
@@ -93,4 +94,9 @@ func (app *applictaion) decodePostForm(r *http.Request, dst any) error {
 	}
 
 	return nil
+}
+
+// Return true if the user is authenticated
+func (app *applictaion) IsAuthenticated(r *http.Request) bool {
+	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
 }
