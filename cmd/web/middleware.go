@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/nosurf"
+)
 
 // A commonHeaders middleware to inject Headers
 func commonHeaders(next http.Handler) http.Handler {
@@ -30,6 +34,7 @@ func (app *applictaion) logRequest(next http.Handler) http.Handler {
 	})
 }
 
+// create a middleware for protected routes
 func (app *applictaion) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -46,4 +51,15 @@ func (app *applictaion) requireAuthentication(next http.Handler) http.Handler {
 		// Add call the next handler
 		next.ServeHTTP(w, r)
 	})
+}
+
+// NoSurf middleware func for CSRF
+func noSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next)
+	csrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   true,
+	})
+	return csrfHandler
 }
