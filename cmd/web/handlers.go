@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/MuhammadSaim/snippetbox/internal/models"
 	"github.com/MuhammadSaim/snippetbox/internal/validator"
@@ -58,14 +57,14 @@ func (app *applictaion) snippetView(w http.ResponseWriter, r *http.Request) {
 	// check the ID is valid intgere
 	// if it not converted into an integer or value is less then 1
 	// return a 404 page not found response.
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil || id < 1 {
+	code := r.PathValue("code")
+	if code == "" {
 		http.NotFound(w, r)
 		return
 	}
 
 	// Use the SnippetModel's Get to find the snippet and send it to the response
-	snippet, err := app.snippets.Get(id)
+	snippet, err := app.snippets.Get(code)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			http.NotFound(w, r)
@@ -129,8 +128,15 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// generate unique code
+	uniqueCode, err := app.GenerateUniqueID()
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
 	// pass this data to Insert method to store in the DB
-	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
+	_, err = app.snippets.Insert(uniqueCode, form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -140,7 +146,7 @@ func (app *applictaion) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
 
 	// redirect the user to the snippet page
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%s", uniqueCode), http.StatusSeeOther)
 }
 
 // handlers for the authentications

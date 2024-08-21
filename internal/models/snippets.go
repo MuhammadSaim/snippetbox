@@ -9,12 +9,13 @@ import (
 // Define a Snippet type to hold teh data for an individual snippet. Notice how
 // the fields of the struct correspond to the fields in our MySQL snippets table
 type Snippet struct {
-	ID        int
-	Title     string
-	Content   string
-	ExpiredAt time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID         int
+	UniqueCode string
+	Title      string
+	Content    string
+	ExpiredAt  time.Time
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 // Define a  SnippetModel type which wraps a sql.DB connection pool
@@ -23,17 +24,17 @@ type SnippetModel struct {
 }
 
 // This will insert a new snippet into the DB
-func (m *SnippetModel) Insert(title string, conetnt string, expires int) (int, error) {
+func (m *SnippetModel) Insert(uniqueCode string, title string, conetnt string, expires int) (int, error) {
 	// Write the SQL statement we want to execute. I have split it over Three lines
 	// for readability that's why I used backquotes
-	stmt := `INSERT INTO snippets (title, content, expired_at, created_at, updated_at)
+	stmt := `INSERT INTO snippets (unique_code, title, content, expired_at, created_at, updated_at)
 			VALUES
-			(?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY), UTC_TIMESTAMP(), UTC_TIMESTAMP())`
+			(?, ?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY), UTC_TIMESTAMP(), UTC_TIMESTAMP())`
 
 	// Use the Exec() method on the embeded connection pool to execute the
 	// statement . The first parameter is the SQL statement, followed by the
 	// values for the placeholder parameters
-	result, err := m.DB.Exec(stmt, title, conetnt, expires)
+	result, err := m.DB.Exec(stmt, uniqueCode, title, conetnt, expires)
 	if err != nil {
 		return 0, err
 	}
@@ -51,20 +52,20 @@ func (m *SnippetModel) Insert(title string, conetnt string, expires int) (int, e
 }
 
 // This will return a specific snipped based on its id
-func (m *SnippetModel) Get(id int) (Snippet, error) {
+func (m *SnippetModel) Get(uniqueCode string) (Snippet, error) {
 	// SQL statement to get the snippet
-	stmt := `SELECT * FROM snippets WHERE expired_at > UTC_TIMESTAMP() AND id = ?`
+	stmt := `SELECT * FROM snippets WHERE expired_at > UTC_TIMESTAMP() AND unique_code = ?`
 
 	// Use the QueryRow func on the connection pool to execute our
 	// SQL statement, passing in the untrusted id as the value for the placeholder
 	// and return the sql.Row
-	row := m.DB.QueryRow(stmt, id)
+	row := m.DB.QueryRow(stmt, uniqueCode)
 
 	// initialize the Snippet struct
 	var snippet Snippet
 
 	// Use row.Scan to copy the values from each field to crosponding structs
-	err := row.Scan(&snippet.ID, &snippet.Title, &snippet.Content, &snippet.ExpiredAt, &snippet.CreatedAt, &snippet.UpdatedAt)
+	err := row.Scan(&snippet.ID, &snippet.UniqueCode, &snippet.Title, &snippet.Content, &snippet.ExpiredAt, &snippet.CreatedAt, &snippet.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Snippet{}, ErrNoRecord
@@ -101,7 +102,7 @@ func (m *SnippetModel) Latest() ([]Snippet, error) {
 	for rows.Next() {
 		// create a pointer to new snippet
 		var snippet Snippet
-		err = rows.Scan(&snippet.ID, &snippet.Title, &snippet.Content, &snippet.ExpiredAt, &snippet.CreatedAt, &snippet.UpdatedAt)
+		err = rows.Scan(&snippet.ID, &snippet.UniqueCode, &snippet.Title, &snippet.Content, &snippet.ExpiredAt, &snippet.CreatedAt, &snippet.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}

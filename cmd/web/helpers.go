@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/MuhammadSaim/snippetbox/internal/models"
 	"github.com/go-playground/form/v4"
 	"github.com/justinas/nosurf"
 )
@@ -101,4 +104,47 @@ func (app *applictaion) decodePostForm(r *http.Request, dst any) error {
 // Return true if the user is authenticated
 func (app *applictaion) IsAuthenticated(r *http.Request) bool {
 	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
+}
+
+// generate unique id for the snippets
+func (app *applictaion) GenerateUniqueID() (string, error) {
+	const maxAttempts = 1000
+	for i := 1; i <= maxAttempts; i++ {
+		uniqueID := GetUniqueBase64ID()
+		_, err := IDExists(app, uniqueID)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				return uniqueID, nil
+			}
+			return "", err
+		}
+	}
+	return "", fmt.Errorf("failed to generate the unique id")
+}
+
+// check the unique id in DB
+func IDExists(app *applictaion, ID string) (bool, error) {
+	_, err := app.snippets.Get(ID)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// Get the unique id
+func GetUniqueBase64ID() string {
+	base64_chars := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
+
+	// seed the random number generator
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	var sb strings.Builder
+	sb.Grow(len(base64_chars))
+
+	for i := 0; i < 11; i++ {
+		rand_char := base64_chars[r.Intn(len(base64_chars))]
+		sb.WriteByte(rand_char)
+	}
+
+	return sb.String()
 }

@@ -17,10 +17,10 @@
         }}
         <tr>
             <td>
-                <a href="/snippet/view/{{.ID}}">{{ .Title }}</a>
+                <a href="/snippet/view/{{.UniqueCode}}">{{ .Title }}</a>
             </td>
             <td>{{ .CreatedAt | humanDate }}</td>
-            <td>#{{ .ID }}</td>
+            <td>#{{ .UniqueCode }}</td>
         </tr>
         {{
             end

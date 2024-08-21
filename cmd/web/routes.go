@@ -25,7 +25,7 @@ func (app *applictaion) routes() http.Handler {
 
 	// Registered the other application routes
 	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
-	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
+	mux.Handle("GET /snippet/view/{code}", dynamic.ThenFunc(app.snippetView))
 
 	// authentication routes
 	mux.Handle("GET /user/signup", dynamic.ThenFunc(app.userSignup))
